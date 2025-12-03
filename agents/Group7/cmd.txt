@@ -1,1 +1,1 @@
-agents.Group7.MyAgent VeryCleverAgent
+agents.Group7.MaestroAgent MaestroAgent
