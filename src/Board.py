@@ -138,8 +138,7 @@ class Board:
         output = ""
 
         # Top red edge (column indices in red)
-        output += "  " + "".join(Colour.red(f"{i:2d}")
-                                 for i in range(size)) + "\n"
+        output += "  " + "".join(Colour.red(f"{i:2d}") for i in range(size)) + "\n"
 
         leading_spaces = ""
         for row_index, line in enumerate(self._tiles):
@@ -164,9 +163,12 @@ class Board:
             output += Colour.blue(f"{row_index:2d}") + "\n"
             leading_spaces += " "
 
-        output += " " + leading_spaces + "".join(
-            Colour.red(f"{i:2d}") for i in range(size)
-        ) + "\n"
+        output += (
+            " "
+            + leading_spaces
+            + "".join(Colour.red(f"{i:2d}") for i in range(size))
+            + "\n"
+        )
 
         return output
 
@@ -232,8 +234,9 @@ class Board:
                 x_n = x + Tile.I_DISPLACEMENTS[idx]
                 y_n = y + Tile.J_DISPLACEMENTS[idx]
                 if 0 <= x_n < size and 0 <= y_n < size:
-                    if (x_n, y_n) not in visited and \
-                       self._tiles[x_n][y_n].colour == colour:
+                    if (x_n, y_n) not in visited and self._tiles[x_n][
+                        y_n
+                    ].colour == colour:
                         visited.add((x_n, y_n))
                         parent[(x_n, y_n)] = (x, y)
                         q.append((x_n, y_n))
