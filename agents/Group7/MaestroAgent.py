@@ -1,7 +1,6 @@
 import math
 import random
 import time
-from copy import deepcopy
 
 from src.AgentBase import AgentBase
 from src.Board import Board
