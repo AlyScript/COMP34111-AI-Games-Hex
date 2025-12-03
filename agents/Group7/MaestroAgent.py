@@ -8,6 +8,17 @@ from src.Colour import Colour
 from src.Move import Move
 
 
+def get_neighbors(size, idx):
+    r, c = divmod(idx, size)
+    offsets = [(-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1), (1, 0)]
+    neighbors = []
+    for dr, dc in offsets:
+        nr, nc = r + dr, c + dc
+        if 0 <= nr < size and 0 <= nc < size:
+            neighbors.append(nr * size + nc)
+    return neighbors
+
+
 class UnionFind:
     def __init__(self, size):
         self.size = size
@@ -90,6 +101,7 @@ class UnionFind:
         return new_obj
 
 
+# --- RAVE NODE ---
 class RaveNode:
     def __init__(self, parent=None, move=None):
         self.parent = parent
@@ -107,7 +119,7 @@ class MaestroAgent(AgentBase):
         self.colour = colour
         self.opponent_colour = Colour.opposite(colour)
         self.board_size = 11
-        self.rave_bias = 3000  # Higher bias for "Maestro" level trust in AMAF
+        self.rave_bias = 3000
         self.time_limit_total = 290
         self.start_time_game = time.time()
 
@@ -120,18 +132,14 @@ class MaestroAgent(AgentBase):
         return min(budget, 25.0)
 
     def make_move(self, turn: int, board: Board, opp_move: Move | None) -> Move:
-        # 1. Stateless Identity Update
         self.opponent_colour = Colour.opposite(self.colour)
 
-        # 2. Opening Book: Check for SWAP opportunity
         if turn == 1 and self.colour == Colour.BLUE:
-            # Check center box (3-7)
             for x in range(3, 8):
                 for y in range(3, 8):
                     if board.tiles[x][y].colour == Colour.RED:
                         return Move(-1, -1)
 
-        # 3. Build Shadow Board
         shadow_board = UnionFind(self.board_size)
         for r in range(self.board_size):
             for c in range(self.board_size):
@@ -141,7 +149,6 @@ class MaestroAgent(AgentBase):
                 elif tile_c == self.opponent_colour:
                     shadow_board.place(r * self.board_size + c, self.opponent_colour)
 
-        # 4. RAVE MCTS
         root = RaveNode(parent=None, move=None)
         root.untried_moves = list(shadow_board.empty_cells)
 
@@ -152,10 +159,9 @@ class MaestroAgent(AgentBase):
             node = root
             sim_board = shadow_board.clone()
 
-            # Selection
+            # 1. SELECTION
             while node.untried_moves == [] and node.children:
                 node = self.select_child_rave(node)
-                # Apply move
                 depth = 0
                 t = node
                 while t.parent:
@@ -164,9 +170,12 @@ class MaestroAgent(AgentBase):
                 mover = self.colour if (depth % 2 != 0) else self.opponent_colour
                 sim_board.place(node.move, mover)
 
-            # Expansion
+            # 2. EXPANSION
+            last_move_idx = node.move  # Track for locality
             if node.untried_moves:
                 m = random.choice(node.untried_moves)
+                last_move_idx = m  # Update for simulation start
+
                 depth = 0
                 t = node
                 while t.parent:
@@ -181,7 +190,7 @@ class MaestroAgent(AgentBase):
                 new_node.untried_moves = list(sim_board.empty_cells)
                 node = new_node
 
-            # Simulation (AMAF tracking)
+            # 3. SIMULATION (Now with LOCALITY Heuristic)
             sim_red_moves = set()
             sim_blue_moves = set()
 
@@ -198,29 +207,41 @@ class MaestroAgent(AgentBase):
             elif sim_board.check_win(self.opponent_colour):
                 winner_colour = self.opponent_colour
 
-            if not winner_colour:
-                possible_moves = list(sim_board.empty_cells)
-                random.shuffle(possible_moves)
+            # Copy empty cells for fast manipulation
+            empty_working_set = sim_board.empty_cells.copy()
 
-                while possible_moves:
-                    move_idx = possible_moves.pop()
-                    sim_board.place(move_idx, next_mover)
+            while winner_colour is None and empty_working_set:
+                move_idx = None
 
-                    if next_mover == Colour.RED:
-                        sim_red_moves.add(move_idx)
-                    else:
-                        sim_blue_moves.add(move_idx)
+                # HEURISTIC: 80% chance to reply locally to the last move
+                if last_move_idx is not None and random.random() < 0.8:
+                    neighbors = get_neighbors(self.board_size, last_move_idx)
+                    valid_neighbors = [n for n in neighbors if n in empty_working_set]
+                    if valid_neighbors:
+                        move_idx = random.choice(valid_neighbors)
 
-                    if sim_board.check_win(next_mover):
-                        winner_colour = next_mover
-                        break
-                    next_mover = (
-                        self.opponent_colour
-                        if next_mover == self.colour
-                        else self.colour
-                    )
+                # Fallback: Random move
+                if move_idx is None:
+                    # Quick random choice from set
+                    move_idx = random.choice(list(empty_working_set))
 
-            # Backpropagation
+                empty_working_set.remove(move_idx)
+                sim_board.place(move_idx, next_mover)
+                last_move_idx = move_idx  # Update for next step
+
+                if next_mover == Colour.RED:
+                    sim_red_moves.add(move_idx)
+                else:
+                    sim_blue_moves.add(move_idx)
+
+                if sim_board.check_win(next_mover):
+                    winner_colour = next_mover
+                    break
+                next_mover = (
+                    self.opponent_colour if next_mover == self.colour else self.colour
+                )
+
+            # 4. BACKPROPAGATION
             winning_moves = (
                 sim_red_moves if winner_colour == Colour.RED else sim_blue_moves
             )
@@ -236,7 +257,7 @@ class MaestroAgent(AgentBase):
 
         if not root.children:
             if not shadow_board.empty_cells:
-                return Move(-1, -1)  # Should not happen
+                return Move(-1, -1)
             m = list(shadow_board.empty_cells)[0]
             r, c = divmod(m, self.board_size)
             return Move(r, c)
@@ -251,7 +272,6 @@ class MaestroAgent(AgentBase):
 
         for child in node.children:
             if child.visits == 0:
-                # High urgency for unvisited nodes in RAVE
                 return child
 
             uct_val = child.wins / child.visits
