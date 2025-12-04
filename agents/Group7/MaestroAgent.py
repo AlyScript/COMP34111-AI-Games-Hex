@@ -113,6 +113,11 @@ class RaveNode:
         self.amaf_wins = 0
         self.amaf_visits = 0
 
+        if not parent:
+            self.depth = 0
+        else:
+            self.depth = parent.depth + 1
+
 
 class MaestroAgent(AgentBase):
     def __init__(self, colour: Colour):
@@ -134,7 +139,8 @@ class MaestroAgent(AgentBase):
     def make_move(self, turn: int, board: Board, opp_move: Move | None) -> Move:
         self.opponent_colour = Colour.opposite(self.colour)
 
-        if turn == 1 and self.colour == Colour.BLUE:
+        # Pie Rule
+        if turn == 2 and self.colour == Colour.BLUE:
             for x in range(3, 8):
                 for y in range(3, 8):
                     if board.tiles[x][y].colour == Colour.RED:
@@ -176,12 +182,9 @@ class MaestroAgent(AgentBase):
                 m = random.choice(node.untried_moves)
                 last_move_idx = m  # Update for simulation start
 
-                depth = 0
-                t = node
-                while t.parent:
-                    depth += 1
-                    t = t.parent
-                exp_mover = self.colour if (depth % 2 == 0) else self.opponent_colour
+                exp_mover = (
+                    self.colour if (node.depth % 2 == 0) else self.opponent_colour
+                )
 
                 sim_board.place(m, exp_mover)
                 new_node = RaveNode(parent=node, move=m)
@@ -194,12 +197,7 @@ class MaestroAgent(AgentBase):
             sim_red_moves = set()
             sim_blue_moves = set()
 
-            depth = 0
-            t = node
-            while t.parent:
-                depth += 1
-                t = t.parent
-            next_mover = self.opponent_colour if (depth % 2 != 0) else self.colour
+            next_mover = self.opponent_colour if (node.depth % 2 != 0) else self.colour
 
             winner_colour = None
             if sim_board.check_win(self.colour):
