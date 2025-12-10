@@ -119,7 +119,7 @@ class RaveNode:
             self.depth = parent.depth + 1
 
 
-class MaestroAgent(AgentBase):
+class MaestroBaseAgent(AgentBase):
     def __init__(self, colour: Colour):
         self.colour = colour
         self.opponent_colour = Colour.opposite(colour)
@@ -127,11 +127,6 @@ class MaestroAgent(AgentBase):
         self.rave_bias = 3000
         self.time_limit_total = 290
         self.start_time_game = time.time()
-        self.n_cells = self.board_size * self.board_size
-        self.precomputed_neighbors = {
-            idx: get_neighbors(self.board_size, idx)
-            for idx in range(self.n_cells)
-        }
 
     def get_time_allocation(self):
         elapsed = time.time() - self.start_time_game
@@ -162,8 +157,7 @@ class MaestroAgent(AgentBase):
                                        c, self.opponent_colour)
 
         root = RaveNode(parent=None, move=None)
-        # root.untried_moves = list(shadow_board.empty_cells)
-        root.untried_moves = self.get_candidate_moves(shadow_board)
+        root.untried_moves = list(shadow_board.empty_cells)
 
         start_time = time.time()
         time_budget = self.get_time_allocation()
@@ -199,9 +193,7 @@ class MaestroAgent(AgentBase):
                 new_node = RaveNode(parent=node, move=m)
                 node.untried_moves.remove(m)
                 node.children.append(new_node)
-                # new_node.untried_moves = list(sim_board.empty_cells)
-                new_node.untried_moves = self.get_candidate_moves(
-                    sim_board)
+                new_node.untried_moves = list(sim_board.empty_cells)
                 node = new_node
 
             # 3. SIMULATION (Now with LOCALITY Heuristic)
@@ -301,38 +293,3 @@ class MaestroAgent(AgentBase):
                 best_child = child
 
         return best_child
-
-    def get_candidate_moves(self, uf_board: UnionFind) -> list[int]:
-        """
-        Return a reduced set of plausible moves (frontier cells).
-
-        - If board is almost empty or almost full -> just return all empties.
-        - Otherwise -> return empties that are adjacent to at least one stone.
-          If that frontier set is tiny, fall back to all empties for safety.
-        """
-        empties = uf_board.empty_cells
-        n_empties = len(empties)
-
-        # Early opening or very late endgame: don't prune
-        if n_empties == 0:
-            return []
-        if n_empties >= self.n_cells - 3:
-            # basically empty board -> don't bias too early
-            return list(empties)
-        if n_empties <= 10:
-            # small remaining set -> use everything
-            return list(empties)
-
-        frontier: set[int] = set()
-        # Look at all occupied cells and add adjacent empties
-        for idx in range(self.n_cells):
-            if uf_board.board_status[idx] is not None:
-                for n in self.precomputed_neighbors[idx]:
-                    if n in empties:
-                        frontier.add(n)
-
-        # Safety: if frontier is too small (e.g. weird pattern), fall back
-        if len(frontier) >= 5:
-            return list(frontier)
-        else:
-            return list(empties)
