@@ -1,0 +1,261 @@
+{
+  "config": {
+    "board_size": 11,
+    "games_per_matchup": 30,
+    "agents": {
+      "Maestro": "agents.Group7.MaestroAgent MaestroAgent",
+      "MCTS": "agents.Group7.MctsAgent VeryCleverAgent",
+      "AMAF": "agents.Group7.AmafAgent AmafAgent",
+      "Minimax": "agents.Group7.MinimaxAgent MinimaxAgent",
+      "Naive": "agents.DefaultAgents.NaiveAgent NaiveAgent"
+    }
+  },
+  "matchups": {
+    "Maestro_vs_MCTS": {
+      "games": 30,
+      "wins": {
+        "MCTS": 2,
+        "Maestro": 28
+      },
+      "wins_as_p1": {
+        "Maestro": 13
+      },
+      "wins_as_p2": {
+        "MCTS": 2,
+        "Maestro": 15
+      },
+      "reasons": {
+        "WIN": 30
+      },
+      "unknown_winner": 0,
+      "time_ns": {
+        "MCTS": 2775494956000,
+        "Maestro": 5323913981100
+      }
+    },
+    "Maestro_vs_AMAF": {
+      "games": 30,
+      "wins": {
+        "Maestro": 30
+      },
+      "wins_as_p1": {
+        "Maestro": 15
+      },
+      "wins_as_p2": {
+        "Maestro": 15
+      },
+      "reasons": {
+        "WIN": 30
+      },
+      "unknown_winner": 0,
+      "time_ns": {
+        "AMAF": 4344693500800,
+        "Maestro": 4275362191800
+      }
+    },
+    "Maestro_vs_Minimax": {
+      "games": 30,
+      "wins": {
+        "Maestro": 22,
+        "Minimax": 8
+      },
+      "wins_as_p1": {
+        "Maestro": 9,
+        "Minimax": 2
+      },
+      "wins_as_p2": {
+        "Maestro": 13,
+        "Minimax": 6
+      },
+      "reasons": {
+        "TIMEOUT": 22,
+        "WIN": 8
+      },
+      "unknown_winner": 0,
+      "time_ns": {
+        "Minimax": 9050208917500,
+        "Maestro": 2989612073800
+      }
+    },
+    "Maestro_vs_Naive": {
+      "games": 30,
+      "wins": {
+        "Maestro": 30
+      },
+      "wins_as_p1": {
+        "Maestro": 15
+      },
+      "wins_as_p2": {
+        "Maestro": 15
+      },
+      "reasons": {
+        "WIN": 2,
+        "BAD_MOVE": 28
+      },
+      "unknown_winner": 0,
+      "time_ns": {
+        "Maestro": 4874634596300,
+        "Naive": 1533000
+      }
+    },
+    "MCTS_vs_AMAF": {
+      "games": 30,
+      "wins": {
+        "MCTS": 30
+      },
+      "wins_as_p1": {
+        "MCTS": 15
+      },
+      "wins_as_p2": {
+        "MCTS": 15
+      },
+      "reasons": {
+        "WIN": 30
+      },
+      "unknown_winner": 0,
+      "time_ns": {
+        "AMAF": 5365597910800,
+        "MCTS": 2683043582300
+      }
+    },
+    "MCTS_vs_Minimax": {
+      "games": 30,
+      "wins": {
+        "Minimax": 10,
+        "MCTS": 20
+      },
+      "wins_as_p1": {
+        "MCTS": 6,
+        "Minimax": 1
+      },
+      "wins_as_p2": {
+        "Minimax": 9,
+        "MCTS": 14
+      },
+      "reasons": {
+        "WIN": 10,
+        "TIMEOUT": 20
+      },
+      "unknown_winner": 0,
+      "time_ns": {
+        "Minimax": 8887728097800,
+        "MCTS": 1883107729200
+      }
+    },
+    "MCTS_vs_Naive": {
+      "games": 30,
+      "wins": {
+        "MCTS": 30
+      },
+      "wins_as_p1": {
+        "MCTS": 15
+      },
+      "wins_as_p2": {
+        "MCTS": 15
+      },
+      "reasons": {
+        "BAD_MOVE": 27,
+        "WIN": 3
+      },
+      "unknown_winner": 0,
+      "time_ns": {
+        "MCTS": 3192798482100,
+        "Naive": 1319300
+      }
+    },
+    "AMAF_vs_Minimax": {
+      "games": 30,
+      "wins": {
+        "Minimax": 26,
+        "AMAF": 4
+      },
+      "wins_as_p1": {
+        "Minimax": 11
+      },
+      "wins_as_p2": {
+        "Minimax": 15,
+        "AMAF": 4
+      },
+      "reasons": {
+        "WIN": 26,
+        "TIMEOUT": 4
+      },
+      "unknown_winner": 0,
+      "time_ns": {
+        "Minimax": 7816263721800,
+        "AMAF": 2987955232700
+      }
+    },
+    "AMAF_vs_Naive": {
+      "games": 30,
+      "wins": {
+        "AMAF": 30
+      },
+      "wins_as_p1": {
+        "AMAF": 15
+      },
+      "wins_as_p2": {
+        "AMAF": 15
+      },
+      "reasons": {
+        "BAD_MOVE": 30
+      },
+      "unknown_winner": 0,
+      "time_ns": {
+        "AMAF": 5322923453500,
+        "Naive": 1738100
+      }
+    },
+    "Minimax_vs_Naive": {
+      "games": 30,
+      "wins": {
+        "Minimax": 29,
+        "Naive": 1
+      },
+      "wins_as_p1": {
+        "Minimax": 14
+      },
+      "wins_as_p2": {
+        "Minimax": 15,
+        "Naive": 1
+      },
+      "reasons": {
+        "WIN": 8,
+        "BAD_MOVE": 21,
+        "TIMEOUT": 1
+      },
+      "unknown_winner": 0,
+      "time_ns": {
+        "Minimax": 5951264098900,
+        "Naive": 1443300
+      }
+    }
+  },
+  "league_table": {
+    "Maestro": {
+      "played": 120,
+      "wins": 110,
+      "losses": 10
+    },
+    "MCTS": {
+      "played": 120,
+      "wins": 82,
+      "losses": 38
+    },
+    "AMAF": {
+      "played": 120,
+      "wins": 34,
+      "losses": 86
+    },
+    "Minimax": {
+      "played": 120,
+      "wins": 73,
+      "losses": 47
+    },
+    "Naive": {
+      "played": 120,
+      "wins": 1,
+      "losses": 119
+    }
+  }
+}
